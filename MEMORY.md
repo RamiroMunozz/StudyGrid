@@ -12,6 +12,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas.
   Objetivo en clave `diario-de-estudio-objetivo` (independiente de historial/tema).
 - `node --test` en verde: 88 tests. Datos: `diario-de-estudio`, `diario-de-estudio-tema`,
   `diario-de-estudio-objetivo`.
+- `README.md` completo: qué es la app, cómo usarla, cómo abrirla (sin servidor), tests,
+  estructura y claves de datos. Título alineado con «Diario de Estudio».
 
 ## Decisiones (y por qué)
 
