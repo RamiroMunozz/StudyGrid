@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diario de Estudio</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="theme-logic.js"></script>
+  <script>
+    // Arranque: aplica el tema antes de pintar el cuerpo para que no se vea
+    // un destello del tema por defecto. Solo usa la lógica pura de ThemeLogic.
+    (function () {
+      var almacen = null;
+      try {
+        almacen = window.localStorage;
+      } catch (error) {
+        almacen = null;
+      }
+
+      var consulta = null;
+      try {
+        consulta = window.matchMedia("(prefers-color-scheme: dark)");
+      } catch (error) {
+        consulta = null;
+      }
+
+      document.documentElement.setAttribute(
+        "data-theme",
+        ThemeLogic.resolverTema(ThemeLogic.leerTemaGuardado(almacen), ThemeLogic.prefiereOscuro(consulta))
+      );
+    })();
+  </script>
+</head>
+<body>
+  <div class="contenedor">
+
+    <header>
+      <h1>Diario de Estudio</h1>
+      <p class="subtitulo">Anota tus sesiones y mantén la racha.</p>
+
+      <fieldset class="temas">
+        <legend class="temas-leyenda">Tema</legend>
+        <div class="temas-opciones">
+          <label class="tema-opcion">
+            <input type="radio" name="tema" value="claro">
+            <span>Claro</span>
+          </label>
+          <label class="tema-opcion">
+            <input type="radio" name="tema" value="oscuro">
+            <span>Oscuro</span>
+          </label>
+          <label class="tema-opcion">
+            <input type="radio" name="tema" value="medio">
+            <span>Medio</span>
+          </label>
+        </div>
+      </fieldset>
+    </header>
+
+    <main>
+      <section class="tarjeta racha" aria-live="polite">
+        <div class="racha-bloque">
+          <p class="racha-etiqueta">Racha actual</p>
+          <p class="racha-numero">
+            <span id="racha-numero">0</span><span aria-hidden="true">🔥</span>
+          </p>
+          <p class="racha-texto" id="racha-texto">días seguidos</p>
+        </div>
+
+        <div class="racha-bloque">
+          <p class="racha-etiqueta">Mejor racha</p>
+          <p class="racha-numero racha-numero-mejor" id="mejor-racha-numero">0</p>
+          <p class="racha-texto" id="mejor-racha-texto">días</p>
+        </div>
+      </section>
+
+      <section class="tarjeta resumen">
+        <div class="resumen-bloque resumen-bloque-semana">
+          <p class="resumen-etiqueta">Esta semana</p>
+          <p class="resumen-numero"><span id="semana-minutos">0</span><span class="resumen-unidad">min</span></p>
+
+          <div class="objetivo-semanal" id="objetivo-semanal">
+            <p class="objetivo-invitacion" id="objetivo-invitacion">Fija un objetivo semanal</p>
+
+            <div class="objetivo-controles">
+              <label class="objetivo-etiqueta" for="objetivo-minutos">Objetivo semanal (minutos)</label>
+              <input
+                type="number"
+                id="objetivo-minutos"
+                name="objetivo-minutos"
+                class="objetivo-campo"
+                min="1"
+                max="10080"
+                step="1"
+                inputmode="numeric"
+                placeholder="Ej: 300"
+              >
+              <div class="objetivo-botones">
+                <button type="button" class="objetivo-boton objetivo-guardar" id="objetivo-guardar">Guardar objetivo</button>
+                <button type="button" class="objetivo-boton objetivo-quitar" id="objetivo-quitar" hidden>Quitar</button>
+              </div>
+            </div>
+
+            <p class="objetivo-cifra" id="objetivo-cifra" hidden>0 / 0 min</p>
+
+            <div
+              class="objetivo-barra"
+              id="objetivo-barra"
+              role="progressbar"
+              aria-label="Progreso del objetivo semanal"
+              aria-valuemin="0"
+              aria-valuemax="0"
+              aria-valuenow="0"
+              aria-valuetext="0 de 0 minutos (0 %)"
+              hidden
+            >
+              <div class="objetivo-barra-pista">
+                <div class="objetivo-barra-relleno" id="objetivo-barra-relleno"></div>
+              </div>
+            </div>
+
+            <div class="objetivo-avisos" id="objetivo-avisos">
+              <p class="objetivo-estado" id="objetivo-estado" aria-live="polite" hidden></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="resumen-bloque">
+          <p class="resumen-etiqueta">Este mes</p>
+          <p class="resumen-numero"><span id="mes-dias">0</span><span class="resumen-unidad" id="mes-unidad">días</span></p>
+        </div>
+      </section>
+
+      <section class="tarjeta mapa" aria-labelledby="mapa-titulo">
+        <div class="mapa-cabecera">
+          <h2 id="mapa-titulo">Últimas 12 semanas</h2>
+          <p class="mapa-pista">Cada cuadro es un día: más intensidad, más minutos.</p>
+        </div>
+
+        <div class="mapa-marco">
+          <div class="mapa-dias" aria-hidden="true">
+            <span>L</span>
+            <span>M</span>
+            <span>X</span>
+            <span>J</span>
+            <span>V</span>
+            <span>S</span>
+            <span>D</span>
+          </div>
+
+          <div class="mapa-cuerpo">
+            <div class="mapa-meses" id="mapa-meses" aria-hidden="true"></div>
+            <div
+              class="mapa-cuadricula"
+              id="mapa-cuadricula"
+              role="group"
+              aria-label="Días de las últimas 12 semanas"
+            ></div>
+          </div>
+        </div>
+
+        <ul class="mapa-leyenda">
+          <li><span class="mapa-muestra nivel-0" aria-hidden="true"></span>Sin sesiones</li>
+          <li><span class="mapa-muestra nivel-1" aria-hidden="true"></span>1–30 min</li>
+          <li><span class="mapa-muestra nivel-2" aria-hidden="true"></span>31–60 min</li>
+          <li><span class="mapa-muestra nivel-3" aria-hidden="true"></span>61–120 min</li>
+          <li><span class="mapa-muestra nivel-4" aria-hidden="true"></span>Más de 120 min</li>
+        </ul>
+
+        <div class="mapa-globo" id="mapa-globo" aria-hidden="true" hidden></div>
+      </section>
+
+      <section class="tarjeta">
+        <h2>Nueva sesión</h2>
+        <form id="formulario" novalidate>
+          <div class="campo">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required>
+          </div>
+
+          <div class="campo">
+            <label for="tema">Tema</label>
+            <input type="text" id="tema" name="tema" placeholder="Ej: Repasar JavaScript" maxlength="80" required>
+          </div>
+
+          <div class="campo">
+            <label for="minutos">Minutos</label>
+            <input type="number" id="minutos" name="minutos" min="1" step="1" inputmode="numeric" placeholder="Ej: 45" required>
+          </div>
+
+          <p class="error" id="error" role="alert" hidden></p>
+
+          <button type="submit">Guardar sesión</button>
+        </form>
+      </section>
+
+      <section class="tarjeta">
+        <h2>Sesiones</h2>
+        <ul class="lista" id="lista"></ul>
+        <p class="vacio" id="vacio">Todavía no hay sesiones. ¡Anota la primera!</p>
+      </section>
+    </main>
+
+  </div>
+
+  <script src="date-utils.js"></script>
+  <script src="heatmap-logic.js"></script>
+  <script src="heatmap-ui.js"></script>
+  <script src="theme-ui.js"></script>
+  <script src="weekly-goal-logic.js"></script>
+  <script src="weekly-goal-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
